@@ -1,0 +1,14 @@
+/*
+/*/*
+
+!.gitignore
+!/output
+!/reports
+!/R
+
+!*.R
+!*.Rproj
+!run_chartbot.sh
+
+/slackr
+/.here
