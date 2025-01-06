@@ -1,4 +1,3 @@
-source(here::here("R", "get_stocks.R"))
 source(here::here("R", "relative_ema_computations.R"))
 source(here::here("R", "slackr_handling.R"))
 
@@ -15,7 +14,7 @@ slackr_login()
 
 base_url <- "https://raw.githubusercontent.com/kapsner/miscellaneous2/refs/heads/main/r2source/fin/"
 indices <- c("dax", "nasdaq", "snp500", "dowjones")
-debug <- FALSE
+debug <- TRUE
 
 for (i in indices) {
   dataset <- data.table::fread(paste0(base_url, "ric_", i, ".csv"))

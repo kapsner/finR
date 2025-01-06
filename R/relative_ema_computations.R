@@ -138,6 +138,10 @@ ema_plot <- function(data, index_name) {
     data = data,
     mapping = ggplot2::aes(x = date, y = value, color = EMA)
   ) +
+    ggplot2::geom_hline(yintercept = 90, linetype = 'dotted', col = 'red') +
+    ggplot2::geom_hline(yintercept = 10, linetype = 'dotted', col = 'red') +
+    ggplot2::geom_hline(yintercept = 0, linetype = 'dashed', col = 'black') +
+    ggplot2::geom_hline(yintercept = -10, linetype = 'dotted', col = 'red') +
     ggplot2::geom_line() +
     ggplot2::scale_color_manual(
       values = c("black", "violet", "blue", "red", "orange")
