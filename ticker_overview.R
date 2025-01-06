@@ -14,7 +14,7 @@ slackr_login()
 
 base_url <- "https://raw.githubusercontent.com/kapsner/miscellaneous2/refs/heads/main/r2source/fin/"
 indices <- c("dax", "nasdaq", "snp500", "dowjones")
-debug <- TRUE
+debug <- FALSE
 
 for (i in indices) {
   dataset <- data.table::fread(paste0(base_url, "ric_", i, ".csv"))
