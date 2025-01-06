@@ -1,2 +1,2 @@
-source(here::here("chart_script.R"))
+source(here::here("chart_analysis.R"))
 source(here::here("ticker_overview.R"))
