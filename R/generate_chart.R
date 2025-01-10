@@ -6,7 +6,7 @@ generate_chart <- function(ric, src, title, out_dir) {
     src = src,
     auto.assign = FALSE,
     from = Sys.Date() - 500,
-    to = Sys.Date() - 1
+    to = Sys.Date()
   ) |>
     na.omit()
   n_rows <<- nrow(dataset)
