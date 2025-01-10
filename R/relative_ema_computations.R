@@ -61,7 +61,7 @@ query_data <- function(ric, src, from = Sys.Date() - 500, to = Sys.Date() - 1) {
           src = src,
           auto.assign = FALSE,
           from = Sys.Date() - 500,
-          to = Sys.Date() - 1
+          to = Sys.Date()
         ) |> #s, periodicity = "intraday") |>
           na.omit()
         success <- TRUE
