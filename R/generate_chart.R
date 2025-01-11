@@ -57,7 +57,7 @@ generate_chart <- function(ric, src, title, out_dir) {
       name = paste0(ric, ": ", title),
       type = "candle",
       subset = "last 6 months",
-      theme = quantmod::chartTheme("white"),
+      theme = quantmod::chartTheme("black"),
       up.col = "green",
       dn.col = "red",
       plot = TRUE,
@@ -70,7 +70,7 @@ generate_chart <- function(ric, src, title, out_dir) {
       name = paste0(ric, ": ", title),
       type = "line",
       subset = "last 6 months",
-      theme = quantmod::chartTheme("white", up.col = "black"),
+      theme = quantmod::chartTheme("black", up.col = "black"),
       plot = TRUE,
       TA = ta,
       TAsep = ";"
