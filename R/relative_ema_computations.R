@@ -153,7 +153,8 @@ ema_plot <- function(data, index_name) {
     )) +
     ggplot2::ylab("Pct. of stocks above EMA") +
     ggplot2::theme(axis.text.x = ggplot2::element_blank()) +
-    ggplot2::theme_classic()
+    ggplot2::thmeme_classic() +
+    ggplot2::theme_dark()
   return(ret)
 }
 
