@@ -15,39 +15,39 @@ generate_chart <- function(ric, src, title, out_dir) {
     stop("Number of datapoints < 9, abort")
   }
   ta <- '
-    quantmod::addEMA(n = pmin(9, n_rows), col = "darkgreen");
+    quantmod::addEMA(n = 9, col = "darkgray");
     quantmod::addBBands(n = pmin(20, n_rows), sd = 2);
     quantmod::addVo();
     quantmod::addMACD(fast = pmin(12, n_rows), slow = pmin(26, n_rows), signal = 9, col = c("green", "red", "black", "blue"));
     quantmod::addRSI(n = pmin(14, n_rows));
-    quantmod::addROC(n = pmin(7, n_rows))
+    quantmod::addROC(n = 7)
     '
   if (n_rows > 21) {
     ta <- paste0(
       ta,
-      # EMA 50
-      ';quantmod::addEMA(n = pmin(21, n_rows), col = "blue")'
+      # EMA 21
+      ';quantmod::addEMA(n = 21, col = "blue")'
     )
   }
   if (n_rows > 50) {
     ta <- paste0(
       ta,
       # EMA 50
-      ';quantmod::addEMA(n = pmin(50, n_rows), col = "pink")'
+      ';quantmod::addEMA(n = 50, col = "darkgreen")'
     )
   }
   if (n_rows > 100) {
     ta <- paste0(
       ta,
       # EMA 100
-      ';quantmod::addEMA(n = pmin(100, n_rows), col = "red")'
+      ';quantmod::addEMA(n = 100, col = "red")'
     )
   }
   if (n_rows > 200) {
     ta <- paste0(
       ta,
       # EMA 200
-      ';quantmod::addEMA(n = pmin(200, n_rows), col = "orange")'
+      ';quantmod::addEMA(n = 200, col = "orange")'
     )
   }
   if (src == "yahoo") {
@@ -70,7 +70,7 @@ generate_chart <- function(ric, src, title, out_dir) {
       name = paste0(ric, ": ", title),
       type = "line",
       subset = "last 6 months",
-      theme = quantmod::chartTheme("white"),
+      theme = quantmod::chartTheme("white", up.col = "black"),
       plot = TRUE,
       TA = ta,
       TAsep = ";"
