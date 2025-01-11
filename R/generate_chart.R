@@ -15,7 +15,7 @@ generate_chart <- function(ric, src, title, out_dir) {
     stop("Number of datapoints < 9, abort")
   }
   ta <- '
-    quantmod::addEMA(n = pmin(9, n_rows), col = "black");
+    quantmod::addEMA(n = pmin(9, n_rows), col = "darkgreen");
     quantmod::addBBands(n = pmin(20, n_rows), sd = 2);
     quantmod::addVo();
     quantmod::addMACD(fast = pmin(12, n_rows), slow = pmin(26, n_rows), signal = 9, col = c("green", "red", "black", "blue"));
@@ -33,7 +33,7 @@ generate_chart <- function(ric, src, title, out_dir) {
     ta <- paste0(
       ta,
       # EMA 50
-      ';quantmod::addEMA(n = pmin(50, n_rows), col = "darkgreen")'
+      ';quantmod::addEMA(n = pmin(50, n_rows), col = "pink")'
     )
   }
   if (n_rows > 100) {
