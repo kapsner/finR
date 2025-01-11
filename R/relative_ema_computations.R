@@ -145,7 +145,7 @@ ema_plot <- function(data, index_name) {
     ggplot2::geom_hline(yintercept = -10, linetype = 'dotted', col = 'red') +
     ggplot2::geom_line() +
     ggplot2::scale_color_manual(
-      values = c("black", "darkgreen", "blue", "pink", "red", "orange")
+      values = c("black", "darkgray", "blue", "darkgreen", "red", "orange")
     ) +
     ggplot2::ylim(pmin(-10, min(data[get("EMA") == "index", get("value")])), 100) +
     ggplot2::ggtitle(index_name, subtitle = paste0(
