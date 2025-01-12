@@ -74,6 +74,7 @@ for (l in names(looplist)) {
       generate_chart(
         dataset = dataset,
         ric = x,
+        src = ric_list[[x]][["src"]],
         title = ric_list[[x]][["name"]],
         out_dir = out_dir
       )

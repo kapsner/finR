@@ -1,5 +1,5 @@
 
-generate_chart <- function(dataset, ric, title, out_dir) {
+generate_chart <- function(dataset, ric, src, title, out_dir) {
 
   n_rows <<- nrow(dataset)
   message(paste0("Rows: ", n_rows))
