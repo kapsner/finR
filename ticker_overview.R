@@ -1,3 +1,4 @@
+source(here::here("R", "general_functions.R"))
 source(here::here("R", "relative_ema_computations.R"))
 source(here::here("R", "slackr_handling.R"))
 

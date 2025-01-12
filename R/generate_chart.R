@@ -1,14 +1,6 @@
 
-generate_chart <- function(ric, src, title, out_dir) {
-  message(ric)
-  dataset <- quantmod::getSymbols(
-    Symbols = ric,
-    src = src,
-    auto.assign = FALSE,
-    from = Sys.Date() - 500,
-    to = Sys.Date()
-  ) |>
-    na.omit()
+generate_chart <- function(dataset, ric, title, out_dir) {
+
   n_rows <<- nrow(dataset)
   message(paste0("Rows: ", n_rows))
   if (n_rows < 9) {

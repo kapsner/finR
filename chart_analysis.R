@@ -4,8 +4,12 @@
 
 base <- here::here()
 
+source(here::here(base, "R", "general_functions.R"))
 source(here::here(base, "R", "slackr_handling.R"))
 source(here::here(base, "R", "generate_chart.R"))
+source(here::here(base, "R", "relative_ema_computations.R"))
+source(here::here(base, "R", "signals.R"))
+
 out_dir <- here::here(base, "output")
 reports_dir <- here::here(base, "reports")
 
@@ -50,34 +54,89 @@ for (l in names(looplist)) {
 
   ric_list <- looplist[[l]]
 
-  lapply(names(ric_list), function(x) {
-    success_try <- FALSE
-    try_counter <- 0
-    while (!success_try & try_counter < 10) {
-      sleeping <- sample(1:1000/1000, size = 1)
-      try_counter <- tryCatch(
-        expr = {
-          generate_chart(
-            ric = x,
-            src = ric_list[[x]][["src"]],
-            title = ric_list[[x]][["name"]],
-            out_dir = out_dir
-          )
-          success_try <- TRUE
-        },
-        error = function(e) {
-          message(e)
-          try_counter <- sum(try_counter, 1)
-          message(sprintf("\nWaiting %s seconds.", sleeping))
-          Sys.sleep(sleeping)
-          try_counter
-        },
-        finally = function() {
-          try_counter
-        }
+  signal_msg <- "Signals:"
+  signal_rsi <- "\n---\nRSI < 35:"
+  signal_50_below_9 <- "\n\n---\nEMA50 near EMA9 (below):"
+  signal_50_above_9 <- "\n\n---\nEMA50 near EMA9 (above):"
+  signal_200_below_50 <- "\n\n---\nEMA200 near EMA50 (below):"
+  signal_200_above_50 <- "\n\n---\nEMA200 near EMA50 (above):"
+
+
+  lapply(
+    X = names(ric_list),
+    FUN = function(x) {
+      dataset <- query_data(
+        ric = x,
+        src = ric_list[[x]][["src"]],
+        from_date = Sys.Date() - 500,
+        to_date = Sys.Date()
       )
+      generate_chart(
+        dataset = dataset,
+        ric = x,
+        title = ric_list[[x]][["name"]],
+        out_dir = out_dir
+      )
+      if (l != "market") {
+        # signal computations
+        signal_dat <- compute_ema(dataset)
+        signal_dat[, ("RSI") := TTR::RSI(
+          price = get("close"),
+          n = 14,
+          maType = "EMA",
+          wilder = TRUE
+        )]
+        signal_dat <- na.omit(signal_dat)
+
+        # RSI
+        rsi_sig <- rsi_signal(signal_dat)
+        if (isTRUE(rsi_sig$signal)) {
+          signal_rsi <<- paste0(
+            signal_rsi,
+            "\n- ", ric_list[[x]][["name"]], sprintf(" (%s)", rsi_sig$value)
+          )
+        }
+
+        # EMA crossing
+        crossing_sig <- ema_crossing_signal(signal_dat)
+        if (isTRUE(crossing_sig$signal)) {
+          if (grepl(pattern = "50 : 9", x = crossing_sig$signal_below)) {
+            signal_50_below_9 <<- paste0(
+              signal_50_below_9,
+              "\n- ", ric_list[[x]][["name"]]
+            )
+          }
+          if (grepl(pattern = "50 : 9", x = crossing_sig$signal_above)) {
+            signal_50_above_9 <<- paste0(
+              signal_50_above_9,
+              "\n- ", ric_list[[x]][["name"]]
+            )
+          }
+          if (grepl(pattern = "200 : 50", x = crossing_sig$signal_below)) {
+            signal_200_below_50 <<- paste0(
+              signal_200_below_50,
+              "\n- ", ric_list[[x]][["name"]]
+            )
+          }
+          if (grepl(pattern = "200 : 50", x = crossing_sig$signal_above)) {
+            signal_200_above_50 <<- paste0(
+              signal_200_above_50,
+              "\n- ", ric_list[[x]][["name"]]
+            )
+          }
+        }
+      }
     }
-  })
+  )
+
+  slackr_signal_evaluation(
+    signal_msg = signal_msg,
+    signal_rsi = signal_rsi,
+    signal_50_below_9 = signal_50_below_9,
+    signal_50_above_9 = signal_50_above_9,
+    signal_200_below_50 = signal_200_below_50,
+    signal_200_above_50 = signal_200_above_50
+  )
 
   slackr_pdf_upload(
     name = paste0(l, "_list"),
