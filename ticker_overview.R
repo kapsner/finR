@@ -1,6 +1,8 @@
-source(here::here("R", "general_functions.R"))
-source(here::here("R", "relative_ema_computations.R"))
-source(here::here("R", "slackr_handling.R"))
+base <- here::here()
+
+source(here::here(base, "R", "general_functions.R"))
+source(here::here(base, "R", "relative_ema_computations.R"))
+source(here::here(base, "R", "slackr_handling.R"))
 
 # csv_path <- "/home/user/development/git/miscellaneous2/r2source/fin"
 # get_stocks(index = "nasdaq", csv_path = csv_path)
@@ -34,7 +36,7 @@ for (i in indices) {
     filename = paste0(i, "_ema.pdf"),
     plot = final_plot_dax,
     device = "pdf",
-    path = here::here("output"),
+    path = here::here(base, "output"),
     width = 10,
     height = 8,
     dpi = 300
@@ -44,7 +46,7 @@ for (i in indices) {
 
 slackr_pdf_upload(
   name = "indices",
-  out_dir = here::here("output"),
-  reports_dir = here::here("reports"),
+  out_dir = here::here(base, "output"),
+  reports_dir = here::here(base, "reports"),
   slackr_channels = "#random"
 )

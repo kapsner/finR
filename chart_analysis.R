@@ -8,6 +8,7 @@ source(here::here(base, "R", "general_functions.R"))
 source(here::here(base, "R", "slackr_handling.R"))
 source(here::here(base, "R", "generate_chart.R"))
 source(here::here(base, "R", "relative_ema_computations.R"))
+source(here::here(base, "R", "query_database.R"))
 source(here::here(base, "R", "signals.R"))
 
 out_dir <- here::here(base, "output")
@@ -61,23 +62,39 @@ for (l in names(looplist)) {
   signal_200_below_50 <- "\n\n---\nEMA200 near EMA50 (below):"
   signal_200_above_50 <- "\n\n---\nEMA200 near EMA50 (above):"
 
+  # dblist-handling
+  dblist_fn <- here::here(base, "dblist.rds")
+  if (file.exists(dblist_fn)) {
+    dblist <- readRDS(file = dblist_fn)
+  } else {
+    dblist <- list()
+  }
+
 
   lapply(
     X = names(ric_list),
-    FUN = function(x) {
-      dataset <- query_data(
-        ric = x,
-        src = ric_list[[x]][["src"]],
+    FUN = function(ric) {
+      dataset <- query_cache(
+        dblist = dblist,
+        ric = ric,
+        src = ric_list[[ric]][["src"]],
         from_date = Sys.Date() - 3000,
         to_date = Sys.Date()
       )
+
+      # update dblist
+      if (!(ric %in% names(dblist)) || nrow(dblist[[ric]]) < nrow(dataset)) {
+        dblist[[ric]] <<- dataset
+      }
+
       generate_chart(
         dataset = dataset,
-        ric = x,
-        src = ric_list[[x]][["src"]],
-        title = ric_list[[x]][["name"]],
+        ric = ric,
+        src = ric_list[[ric]][["src"]],
+        title = ric_list[[ric]][["name"]],
         out_dir = out_dir
       )
+
       if (l != "market") {
         # signal computations
         signal_dat <- compute_ema(dataset)
@@ -94,7 +111,7 @@ for (l in names(looplist)) {
         if (isTRUE(rsi_sig$signal)) {
           signal_rsi <<- paste0(
             signal_rsi,
-            "\n- ", ric_list[[x]][["name"]], sprintf(" (%s)", rsi_sig$value)
+            "\n- ", ric_list[[ric]][["name"]], sprintf(" (%s)", rsi_sig$value)
           )
         }
 
@@ -104,31 +121,34 @@ for (l in names(looplist)) {
           if (grepl(pattern = "50 : 9", x = crossing_sig$signal_below)) {
             signal_50_below_9 <<- paste0(
               signal_50_below_9,
-              "\n- ", ric_list[[x]][["name"]]
+              "\n- ", ric_list[[ric]][["name"]]
             )
           }
           if (grepl(pattern = "50 : 9", x = crossing_sig$signal_above)) {
             signal_50_above_9 <<- paste0(
               signal_50_above_9,
-              "\n- ", ric_list[[x]][["name"]]
+              "\n- ", ric_list[[ric]][["name"]]
             )
           }
           if (grepl(pattern = "200 : 50", x = crossing_sig$signal_below)) {
             signal_200_below_50 <<- paste0(
               signal_200_below_50,
-              "\n- ", ric_list[[x]][["name"]]
+              "\n- ", ric_list[[ric]][["name"]]
             )
           }
           if (grepl(pattern = "200 : 50", x = crossing_sig$signal_above)) {
             signal_200_above_50 <<- paste0(
               signal_200_above_50,
-              "\n- ", ric_list[[x]][["name"]]
+              "\n- ", ric_list[[ric]][["name"]]
             )
           }
         }
       }
     }
   )
+
+  # save list
+  saveRDS(object = dblist, file = dblist_fn)
 
   slackr_signal_evaluation(
     signal_msg = signal_msg,
