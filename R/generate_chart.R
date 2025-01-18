@@ -42,60 +42,73 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
       ';quantmod::addEMA(n = 200, col = "orange")'
     )
   }
-  if (src == "yahoo") {
-    ta <- paste0(ta, ';\nquantmod::addSAR(col = "darkgray")')
-    quantmod::chartSeries(
-      dataset,
-      name = paste0(ric, ": ", title),
-      type = "candle",
-      subset = "last 6 months",
-      theme = quantmod::chartTheme("white"),
-      up.col = "green",
-      dn.col = "red",
-      plot = TRUE,
-      TA = ta,
-      TAsep = ";"
+  for (timeframe in c("last 6 months", "last 5 years")) {
+    # correct ordering in pdf
+    if (timeframe == "last 6 months") {
+      fnsuffix <- "b"
+    } else {
+      fnsuffix <- "a"
+      dataset <- xts::to.weekly(dataset)
+    }
+
+    if (src == "yahoo") {
+      ta <- paste0(ta, ';\nquantmod::addSAR(col = "darkgray")')
+      quantmod::chartSeries(
+        dataset,
+        name = paste0(ric, ": ", title),
+        type = "candle",
+        subset = timeframe,
+        theme = quantmod::chartTheme("white"),
+        up.col = "green",
+        dn.col = "red",
+        plot = TRUE,
+        TA = ta,
+        TAsep = ";"
+      )
+    } else if (src == "FRED") {
+      quantmod::chartSeries(
+        dataset,
+        name = paste0(ric, ": ", title),
+        type = "line",
+        subset = timeframe,
+        theme = quantmod::chartTheme("white", up.col = "black"),
+        plot = TRUE,
+        TA = ta,
+        TAsep = ";"
+      )
+    }
+    Sys.sleep(3)
+
+    fn <- file.path(
+      path.expand(out_dir),
+      gsub("[[:punct:]]", "_", ric)
     )
-  } else if (src == "FRED") {
-    quantmod::chartSeries(
-      dataset,
-      name = paste0(ric, ": ", title),
-      type = "line",
-      subset = "last 6 months",
-      theme = quantmod::chartTheme("white", up.col = "black"),
-      plot = TRUE,
-      TA = ta,
-      TAsep = ";"
+
+    save_args <- list(
+      file = paste0(fn, "_", fnsuffix, ".pdf"),
+      paper = "a4",
+      height = 10
     )
+
+    # save chart
+    do.call(quantmod::saveChart, save_args)
+    Sys.sleep(3)
+
+    # zoom
+    if (timeframe == "last 6 months") {
+      # zoom
+      quantmod::zoomChart(subset = "last 6 weeks")
+      Sys.sleep(3)
+
+      save_args <- list(
+        file = paste0(fn, "_zoom.pdf"),
+        paper = "a4",
+        height = 10
+      )
+
+      # save chart
+      do.call(quantmod::saveChart, save_args)
+    }
   }
-  Sys.sleep(3)
   message("Plotting finished")
-
-  fn <- file.path(
-    path.expand(out_dir),
-    gsub("[[:punct:]]", "_", ric)
-  )
-
-  save_args <- list(
-    file = paste0(fn, "_a.pdf"),
-    paper = "a4",
-    height = 10
-  )
-
-  # save chart
-  do.call(quantmod::saveChart, save_args)
-  Sys.sleep(3)
-
-  # zoom
-  quantmod::zoomChart(subset = "last 6 weeks")
-  Sys.sleep(3)
-
-  save_args <- list(
-    file = paste0(fn, "_zoom.pdf"),
-    paper = "a4",
-    height = 10
-  )
-
-  # save chart
-  do.call(quantmod::saveChart, save_args)
 }

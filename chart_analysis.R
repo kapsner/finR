@@ -68,7 +68,7 @@ for (l in names(looplist)) {
       dataset <- query_data(
         ric = x,
         src = ric_list[[x]][["src"]],
-        from_date = Sys.Date() - 500,
+        from_date = Sys.Date() - 3000,
         to_date = Sys.Date()
       )
       generate_chart(
