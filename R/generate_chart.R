@@ -1,48 +1,7 @@
 
 generate_chart <- function(dataset, ric, src, title, out_dir) {
-
-  n_rows <<- nrow(dataset)
-  message(paste0("Rows: ", n_rows))
-  if (n_rows < 9) {
-    stop("Number of datapoints < 9, abort")
-  }
-  ta <- '
-    quantmod::addEMA(n = 9, col = "darkgray");
-    quantmod::addBBands(n = pmin(20, n_rows), sd = 2);
-    quantmod::addVo();
-    quantmod::addMACD(fast = pmin(12, n_rows), slow = pmin(26, n_rows), signal = 9, col = c("green", "red", "black", "blue"));
-    quantmod::addRSI(n = pmin(14, n_rows));
-    quantmod::addROC(n = 7)
-    '
-  if (n_rows > 21) {
-    ta <- paste0(
-      ta,
-      # EMA 21
-      ';quantmod::addEMA(n = 21, col = "blue")'
-    )
-  }
-  if (n_rows > 50) {
-    ta <- paste0(
-      ta,
-      # EMA 50
-      ';quantmod::addEMA(n = 50, col = "darkgreen")'
-    )
-  }
-  if (n_rows > 100) {
-    ta <- paste0(
-      ta,
-      # EMA 100
-      ';quantmod::addEMA(n = 100, col = "red")'
-    )
-  }
-  if (n_rows > 200) {
-    ta <- paste0(
-      ta,
-      # EMA 200
-      ';quantmod::addEMA(n = 200, col = "orange")'
-    )
-  }
   for (timeframe in c("last 6 months", "last 5 years")) {
+   
     # correct ordering in pdf
     if (timeframe == "last 6 months") {
       fnsuffix <- "b"
@@ -50,7 +9,49 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
       fnsuffix <- "a"
       dataset <- xts::to.weekly(dataset)
     }
-
+    
+    n_rows <<- nrow(dataset)
+    message(paste0("Rows: ", n_rows))
+    if (n_rows < 9) {
+      stop("Number of datapoints < 9, abort")
+    }
+    ta <- '
+      quantmod::addEMA(n = 9, col = "darkgray");
+      quantmod::addBBands(n = pmin(20, n_rows), sd = 2);
+      quantmod::addVo();
+      quantmod::addMACD(fast = pmin(12, n_rows), slow = pmin(26, n_rows), signal = 9, col = c("green", "red", "black", "blue"));
+      quantmod::addRSI(n = pmin(14, n_rows));
+      quantmod::addROC(n = 7)
+      '
+    if (n_rows > 21) {
+      ta <- paste0(
+        ta,
+        # EMA 21
+        ';quantmod::addEMA(n = 21, col = "blue")'
+      )
+    }
+    if (n_rows > 50) {
+      ta <- paste0(
+        ta,
+        # EMA 50
+        ';quantmod::addEMA(n = 50, col = "darkgreen")'
+      )
+    }
+    if (n_rows > 100) {
+      ta <- paste0(
+        ta,
+        # EMA 100
+        ';quantmod::addEMA(n = 100, col = "red")'
+      )
+    }
+    if (n_rows > 200) {
+      ta <- paste0(
+        ta,
+        # EMA 200
+        ';quantmod::addEMA(n = 200, col = "orange")'
+      )
+    }  
+  
     if (src == "yahoo") {
       ta <- paste0(ta, ';\nquantmod::addSAR(col = "darkgray")')
       quantmod::chartSeries(
