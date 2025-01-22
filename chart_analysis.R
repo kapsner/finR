@@ -63,13 +63,14 @@ for (l in names(looplist)) {
   signal_200_above_50 <- "\n\n---\nEMA200 near EMA50 (above):"
 
   # dblist-handling
-  dblist_fn <- here::here(base, "dblist.rds")
-  if (file.exists(dblist_fn)) {
-    dblist <- readRDS(file = dblist_fn)
-  } else {
-    dblist <- list()
-  }
-
+  # dblist_fn <- here::here(base, "dblist.rds")
+  # if (file.exists(dblist_fn)) {
+  #   dblist <- readRDS(file = dblist_fn)
+  # } else {
+  #   dblist <- list()
+  # }
+  # switch off database for now, its not working 22.1.25
+  dblist <- list()
 
   lapply(
     X = names(ric_list),
@@ -83,9 +84,9 @@ for (l in names(looplist)) {
       )
 
       # update dblist
-      if (!(ric %in% names(dblist)) || nrow(dblist[[ric]]) < nrow(dataset)) {
-        dblist[[ric]] <<- dataset
-      }
+      # if (!(ric %in% names(dblist)) || nrow(dblist[[ric]]) < nrow(dataset)) {
+      #   dblist[[ric]] <<- dataset
+      # }
 
       generate_chart(
         dataset = dataset,
@@ -148,7 +149,7 @@ for (l in names(looplist)) {
   )
 
   # save list
-  saveRDS(object = dblist, file = dblist_fn)
+  # saveRDS(object = dblist, file = dblist_fn)
 
   slackr_signal_evaluation(
     signal_msg = signal_msg,
