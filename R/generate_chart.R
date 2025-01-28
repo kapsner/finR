@@ -1,5 +1,5 @@
 
-generate_chart <- function(dataset, ric, src, title, out_dir) {
+generate_chart <- function(dataset, ric, src, title, out_dir, obv) {
   for (timeframe in c("last 6 months", "last 5 years")) {
 
     # correct ordering in pdf
@@ -54,9 +54,14 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
     if (src == "yahoo") {
       ta <- paste0(
         ta,
-        ';quantmod::addSAR(col = "darkgray")',
-        ';quantmod::addOBV()'
+        ';quantmod::addSAR(col = "darkgray")'
       )
+      if (isTRUE(obv)) {
+        ta <- paste0(
+          ta,
+          ';quantmod::addOBV()'
+        )
+      }
       quantmod::chartSeries(
         dataset,
         name = paste0(ric, ": ", title),

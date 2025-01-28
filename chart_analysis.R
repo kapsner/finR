@@ -62,6 +62,8 @@ for (l in names(looplist)) {
   signal_200_below_50 <- "\n\n---\nEMA200 near EMA50 (below):"
   signal_200_above_50 <- "\n\n---\nEMA200 near EMA50 (above):"
 
+  indicator_obv <- ifelse(l != "market", TRUE, FALSE)
+
   # dblist-handling
   # dblist_fn <- here::here(base, "dblist.rds")
   # if (file.exists(dblist_fn)) {
@@ -75,78 +77,84 @@ for (l in names(looplist)) {
   lapply(
     X = names(ric_list),
     FUN = function(ric) {
-      dataset <- query_cache(
-        dblist = dblist,
-        ric = ric,
-        src = ric_list[[ric]][["src"]],
-        from_date = Sys.Date() - 3000,
-        to_date = Sys.Date()
-      )
-
-      # update dblist
-      # if (!(ric %in% names(dblist)) || nrow(dblist[[ric]]) < nrow(dataset)) {
-      #   dblist[[ric]] <<- dataset
-      # }
-
-      generate_chart(
-        dataset = dataset,
-        ric = ric,
-        src = ric_list[[ric]][["src"]],
-        title = ric_list[[ric]][["name"]],
-        out_dir = out_dir
-      )
-
-      if (l != "market") {
-        # signal computations
-        signal_dat <- compute_ema(dataset)
-        signal_dat[, ("RSI") := TTR::RSI(
-          price = get("close"),
-          n = 14,
-          maType = "EMA",
-          wilder = TRUE
-        )]
-        signal_dat <- na.omit(signal_dat)
-
-        # RSI
-        rsi_sig <- rsi_signal(signal_dat)
-        if (isTRUE(rsi_sig$signal)) {
-          signal_rsi <<- paste0(
-            signal_rsi,
-            "\n- ", ric_list[[ric]][["name"]], sprintf(" (%s)", rsi_sig$value)
+      tryCatch(
+        expr = {
+          dataset <- query_cache(
+            dblist = dblist,
+            ric = ric,
+            src = ric_list[[ric]][["src"]],
+            from_date = Sys.Date() - 3000,
+            to_date = Sys.Date()
           )
-        }
 
-        # EMA crossing
-        crossing_sig <- ema_crossing_signal(signal_dat)
-        if (isTRUE(crossing_sig$signal)) {
-          if (grepl(pattern = "50 : 9", x = crossing_sig$signal_below)) {
-            signal_50_below_9 <<- paste0(
-              signal_50_below_9,
-              "\n- ", ric_list[[ric]][["name"]]
-            )
+          # update dblist
+          # if (!(ric %in% names(dblist)) || nrow(dblist[[ric]]) < nrow(dataset)) {
+          #   dblist[[ric]] <<- dataset
+          # }
+
+          generate_chart(
+            dataset = dataset,
+            ric = ric,
+            src = ric_list[[ric]][["src"]],
+            title = ric_list[[ric]][["name"]],
+            out_dir = out_dir,
+            obv = indicator_obv
+          )
+
+          if (l != "market") {
+            # signal computations
+            signal_dat <- compute_ema(dataset)
+            signal_dat[, ("RSI") := TTR::RSI(
+              price = get("close"),
+              n = 14,
+              maType = "EMA",
+              wilder = TRUE
+            )]
+            signal_dat <- na.omit(signal_dat)
+
+            # RSI
+            rsi_sig <- rsi_signal(signal_dat)
+            if (isTRUE(rsi_sig$signal)) {
+              signal_rsi <<- paste0(
+                signal_rsi,
+                "\n- ", ric_list[[ric]][["name"]], sprintf(" (%s)", rsi_sig$value)
+              )
+            }
+
+            # EMA crossing
+            crossing_sig <- ema_crossing_signal(signal_dat)
+            if (isTRUE(crossing_sig$signal)) {
+              if (grepl(pattern = "50 : 9", x = crossing_sig$signal_below)) {
+                signal_50_below_9 <<- paste0(
+                  signal_50_below_9,
+                  "\n- ", ric_list[[ric]][["name"]]
+                )
+              }
+              if (grepl(pattern = "50 : 9", x = crossing_sig$signal_above)) {
+                signal_50_above_9 <<- paste0(
+                  signal_50_above_9,
+                  "\n- ", ric_list[[ric]][["name"]]
+                )
+              }
+              if (grepl(pattern = "200 : 50", x = crossing_sig$signal_below)) {
+                signal_200_below_50 <<- paste0(
+                  signal_200_below_50,
+                  "\n- ", ric_list[[ric]][["name"]]
+                )
+              }
+              if (grepl(pattern = "200 : 50", x = crossing_sig$signal_above)) {
+                signal_200_above_50 <<- paste0(
+                  signal_200_above_50,
+                  "\n- ", ric_list[[ric]][["name"]]
+                )
+              }
+            }
           }
-          if (grepl(pattern = "50 : 9", x = crossing_sig$signal_above)) {
-            signal_50_above_9 <<- paste0(
-              signal_50_above_9,
-              "\n- ", ric_list[[ric]][["name"]]
-            )
-          }
-          if (grepl(pattern = "200 : 50", x = crossing_sig$signal_below)) {
-            signal_200_below_50 <<- paste0(
-              signal_200_below_50,
-              "\n- ", ric_list[[ric]][["name"]]
-            )
-          }
-          if (grepl(pattern = "200 : 50", x = crossing_sig$signal_above)) {
-            signal_200_above_50 <<- paste0(
-              signal_200_above_50,
-              "\n- ", ric_list[[ric]][["name"]]
-            )
-          }
-        }
-      }
-    }
-  )
+        },
+        error = function(e) {
+          message(sprintf("Error during plotting chart of: %s", ric))
+        })
+    })
 
   # save list
   # saveRDS(object = dblist, file = dblist_fn)
