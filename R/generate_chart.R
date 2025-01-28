@@ -1,7 +1,7 @@
 
 generate_chart <- function(dataset, ric, src, title, out_dir) {
   for (timeframe in c("last 6 months", "last 5 years")) {
-   
+
     # correct ordering in pdf
     if (timeframe == "last 6 months") {
       fnsuffix <- "b"
@@ -9,7 +9,7 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
       fnsuffix <- "a"
       dataset <- xts::to.weekly(dataset)
     }
-    
+
     n_rows <<- nrow(dataset)
     message(paste0("Rows: ", n_rows))
     if (n_rows < 9) {
@@ -50,10 +50,14 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
         # EMA 200
         ';quantmod::addEMA(n = 200, col = "orange")'
       )
-    }  
-  
+    }
+
     if (src == "yahoo") {
-      ta <- paste0(ta, ';\nquantmod::addSAR(col = "darkgray")')
+      ta <- paste0(
+        ta,
+        ';\nquantmod::addSAR(col = "darkgray")',
+        ';\nquantmod::addOBV()'
+      )
       quantmod::chartSeries(
         dataset,
         name = paste0(ric, ": ", title),
