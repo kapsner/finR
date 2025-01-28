@@ -20,8 +20,7 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
       quantmod::addBBands(n = pmin(20, n_rows), sd = 2);
       quantmod::addVo();
       quantmod::addMACD(fast = pmin(12, n_rows), slow = pmin(26, n_rows), signal = 9, col = c("green", "red", "black", "blue"));
-      quantmod::addRSI(n = pmin(14, n_rows));
-      quantmod::addROC(n = 7)
+      quantmod::addRSI(n = pmin(14, n_rows))
       '
     if (n_rows > 21) {
       ta <- paste0(
