@@ -54,8 +54,8 @@ generate_chart <- function(dataset, ric, src, title, out_dir) {
     if (src == "yahoo") {
       ta <- paste0(
         ta,
-        ';\nquantmod::addSAR(col = "darkgray")',
-        ';\nquantmod::addOBV()'
+        ';quantmod::addSAR(col = "darkgray")',
+        ';quantmod::addOBV()'
       )
       quantmod::chartSeries(
         dataset,
